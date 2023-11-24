@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Chat</title>
+</head>
+<body>
+    <h1>Face Chat</h1>
+    <video id="video" width="640" height="480" autoplay></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <textarea id="chat-box" rows="4" cols="50" placeholder="Type your message..."></textarea>
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const chatBox = document.getElementById('chat-box');
+
+        // 웹캠에서 영상을 캡처하는 코드
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => console.error('Error accessing webcam:', error));
+
+        // 얼굴 감지 코드
+        const faceDetector = new window.FaceDetector();
+        video.addEventListener('loadeddata', async () => {
+            const faces = await faceDetector.detect(video);
+            drawFaces(faces);
+        });
+
+        function drawFaces(faces) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            context.strokeStyle = 'red';
+            context.lineWidth = 2;
+
+            faces.forEach(face => {
+                context.beginPath();
+                context.rect(face.boundingBox.x, face.boundingBox.y, face.boundingBox.width, face.boundingBox.height);
+                context.stroke();
+            });
+
+            requestAnimationFrame(() => drawFaces(faces));
+        }
+
+        // 채팅 기능 코드
+        function sendMessage() {
+            const message = chatBox.value;
+            // 여기에서 채팅 메시지를 처리하거나 전송하는 로직을 추가할 수 있습니다.
+            console.log('Message:', message);
+            // 메시지를 처리한 후 입력란을 지울 수도 있습니다.
+            // chatBox.value = '';
+        }
+    </script>
+</body>
+</html>
